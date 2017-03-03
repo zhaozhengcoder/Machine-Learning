@@ -2,5 +2,6 @@
 ####博客的连接：
 Python 实现字符识别—Part5
 http://www.jianshu.com/p/1905bf78f0bd
+<br />
 Python 实现字符识别—Part4
 http://www.jianshu.com/p/b13b3905cc7d
