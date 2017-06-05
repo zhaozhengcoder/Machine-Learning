@@ -1,9 +1,15 @@
 # Machine-Learning
 关于机器学习的内容 
-####1. character recognition  基于向量空间搜索的字符识别
-#####博客的连接：
+1. character recognition  基于向量空间搜索的字符识别
+
+    博客的连接：
 Python 实现字符识别—Part5
 http://www.jianshu.com/p/1905bf78f0bd
 
-Python 实现字符识别—Part4
-http://www.jianshu.com/p/b13b3905cc7d
+2. 线性回归——预测房间问题
+
+    博客的连接：http://www.jianshu.com/p/732323ce3961
+
+3. 逻辑回归——预测肿瘤问题
+
+    博客的连接：http://www.jianshu.com/p/5ae1399a512b
