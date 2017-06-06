@@ -6,7 +6,7 @@
 Python 实现字符识别—Part5
 http://www.jianshu.com/p/1905bf78f0bd
 
-2. 线性回归——预测房间问题
+2. 线性回归——预测房价问题
 
     博客的连接：http://www.jianshu.com/p/732323ce3961
 
