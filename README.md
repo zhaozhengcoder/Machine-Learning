@@ -13,3 +13,7 @@ http://www.jianshu.com/p/1905bf78f0bd
 3. 逻辑回归——预测肿瘤问题
 
     博客的连接：http://www.jianshu.com/p/5ae1399a512b
+
+4. lstm——预测时间序列
+
+    
