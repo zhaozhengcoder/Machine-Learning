@@ -28,10 +28,11 @@ print ('new_var : ',sess.run(new_var))
 
 # 关闭会话
 sess.close()
-
+"""
 # 另一种写法
 with tf.Session() as sess:
     sess.run(init)
     print ('var : ',sess.run(var))
     print ('con_var : ',sess.run(con_var))
     print ('new_var : ',sess.run(new_var))
+"""
