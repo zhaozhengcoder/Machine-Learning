@@ -1,4 +1,4 @@
-# Machine-Learning
+﻿# Machine-Learning
 关于机器学习的内容 
 1. character recognition  基于向量空间搜索的字符识别
 
@@ -15,5 +15,8 @@ http://www.jianshu.com/p/1905bf78f0bd
     博客的连接：http://www.jianshu.com/p/5ae1399a512b
 
 4. lstm——预测时间序列
+
+
+5. tensorflow 学习
 
     
