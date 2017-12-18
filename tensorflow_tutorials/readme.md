@@ -1,10 +1,9 @@
-## tensorflow 从入门到放弃
+## tensorflow 浠庡叆闂ㄥ埌鏀惧純
 
 
 
 
 
 
-python 版本 3.5.4
-
-tensorflow 版本 1.4.0   #tf.__version__
+python 鐗堟湰 3.5.4
+tensorflow 鐗堟湰 1.4.0  
