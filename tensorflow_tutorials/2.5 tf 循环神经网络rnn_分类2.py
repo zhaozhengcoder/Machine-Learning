@@ -1,8 +1,8 @@
 """
-This code is a modified version of the code from this link:
-https://github.com/aymericdamien/TensorFlow-Examples/blob/master/examples/3_NeuralNetworks/recurrent_network.py
 
-His code is a very good one for RNN beginners. Feel free to check it out.
+这个是自己试着更改一些参数，看看output 和state 的维度有没有什么变化 ?
+
+
 """
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
@@ -25,6 +25,8 @@ n_steps = 28    # time steps
 n_hidden_units = 128   # neurons in hidden layer
 n_classes = 10      # MNIST classes (0-9 digits)
 
+new=64
+
 # tf Graph input
 x = tf.placeholder(tf.float32, [None, n_steps, n_inputs])
 y = tf.placeholder(tf.float32, [None, n_classes])
@@ -34,7 +36,8 @@ weights = {
     # (28, 128)
     'in': tf.Variable(tf.random_normal([n_inputs, n_hidden_units])),
     # (128, 10)
-    'out': tf.Variable(tf.random_normal([n_hidden_units, n_classes]))
+    #'out': tf.Variable(tf.random_normal([n_hidden_units, n_classes]))
+    'out': tf.Variable(tf.random_normal([new, n_classes]))
 }
 biases = {
     # (128, )
@@ -66,7 +69,7 @@ def RNN(X, weights, biases):
         cell = tf.nn.rnn_cell.BasicLSTMCell(n_hidden_units, forget_bias=1.0, state_is_tuple=True)
     else:
         #我的版本是1.4 执行这一句，如果是版本小于0.12的话，那么执行上面的那一句
-        cell = tf.contrib.rnn.BasicLSTMCell(n_hidden_units)  #n_hidden_units = 128  neurons in hidden layer
+        cell = tf.contrib.rnn.BasicLSTMCell(new)  #n_hidden_units = 128  neurons in hidden layer
     # lstm cell is divided into two parts (c_state, h_state) #batch_size =128
     init_state = cell.zero_state(batch_size, dtype=tf.float32)
 
@@ -89,7 +92,8 @@ def RNN(X, weights, biases):
     if int((tf.__version__).split('.')[1]) < 12 and int((tf.__version__).split('.')[0]) < 1:
         outputs = tf.unpack(tf.transpose(outputs, [1, 0, 2]))    # states is the last outputs
     else:
-        outputs = tf.unstack(tf.transpose(outputs, [1,0,2]))
+        outputs = tf.unstack(tf.transpose(outputs, [1,0,2])) # 调整维度，原来
+
     results = tf.matmul(outputs[-1], weights['out']) + biases['out']    # shape = (128, 10)
 
     global flag
