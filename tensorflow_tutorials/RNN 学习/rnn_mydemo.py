@@ -59,29 +59,25 @@ biases = {
 }
 
 def RNN(x, weights, biases):
-    # reshape to [1, n_input]
-    x = tf.reshape(x, [-1, n_input])
-    # Generate a n_input-element sequence of inputs
-    # (eg. [had] [a] [general] -> [20] [6] [33])
-    print ("origin x shape : ",x.shape)   # (1,3)
+    batch_size=1
+    x = tf.reshape(x, [batch_size,n_input,1])          # (1,3,1) 相当于batch =1 
 
-    #现在的x已经变成了list ，原来的shape是 (1,3) ,执行split之后，x是 [array([[1]]), array([[3]]), array([[1]])]
-    x = tf.split(x,n_input,1)    
+    # rnn 
+    cell = tf.contrib.rnn.BasicLSTMCell(n_hidden)
+    init_state = cell.zero_state(batch_size, dtype=tf.float32)
+    # final_state 的维度是  batch * n_hidden                       --> 1 * 512
+    # outputs     的维度是  batch * n_input(time_step) * n_hidden  --> 1 * 3  * 512
+    outputs, final_state = tf.nn.dynamic_rnn(cell, x, initial_state=init_state, time_major=False)  
+    
+    #print ("before unstack , output shape : ",outputs.shape)   # output shape :  (1,3,512) (batch,time_step,cell_n_hidden)
+    #unstack 更改维度
+    outputs = tf.unstack(tf.transpose(outputs, [1,0,2]))
+    #这个时候 outputs 变成了list 
+    #print ("output shape[-1] 2: ",outputs[-1].shape)           # output shape :  (3,1,512), outputs[-1] shape (1,512)
+    results = tf.matmul(outputs[-1], weights['out']) + biases['out']
+    #(1,112)  这个的表示意义是一个(1,112)的onehot，112表示字典里面总共有112个词汇
+    return results   #(1, 112)  这个表示的是一个onehot
 
-    #print ("last x shape : ",x.shape)
-
-    # 2-layer LSTM, each layer has n_hidden units.
-    # Average Accuracy= 95.20% at 50k iter
-    rnn_cell = rnn.MultiRNNCell([rnn.BasicLSTMCell(n_hidden),rnn.BasicLSTMCell(n_hidden)])
-    # 1-layer LSTM with n_hidden units but with lower accuracy.
-    # Average Accuracy= 90.60% 50k iter
-    # Uncomment line below to test but comment out the 2-layer rnn.MultiRNNCell above
-    # rnn_cell = rnn.BasicLSTMCell(n_hidden)
-    # generate prediction
-    outputs, states = rnn.static_rnn(rnn_cell, x, dtype=tf.float32)
-    # there are n_input outputs but
-    # we only want the last output
-    return tf.matmul(outputs[-1], weights['out']) + biases['out']   # weights['out'] shape : (512,112) , outputs[-1] (1 , 512)* weights['out'] (512,112) == (1 ,112 )
 
 pred = RNN(x, weights, biases)
 # Loss and optimizer
@@ -100,12 +96,15 @@ with tf.Session() as session:
     acc_total = 0
     loss_total = 0
 
-    symbols_in_keys = [ [dictionary[ str(training_data[i])]] for i in range(offset, offset+n_input) ]
+    # 输入x ，将前三个词汇转换成词向量
+    # symbols_in_keys  是一个二维的list -->  [[34], [92], [85]]
+    symbols_in_keys = [[dictionary[ str(training_data[i])]] for i in range(offset, offset+n_input) ]
+    # reshape  把他们转换成 (1, 3, 1)
     symbols_in_keys = np.reshape(np.array(symbols_in_keys), [-1, n_input, 1])
 
-    # 这一段代码搞定是 y_true
+    # 这一段代码搞定是 y_true ，把第四个词转换成词向量 onehot的类型
     symbols_out_onehot = np.zeros([vocab_size], dtype=float)
-    #  str(training_data[offset+n_input])  ->  'mice'
+    # str(training_data[offset+n_input])  ->  'mice'
     symbols_out_onehot[dictionary[str(training_data[offset+n_input])]] = 1.0
     symbols_out_onehot = np.reshape(symbols_out_onehot,[1,-1])
 
