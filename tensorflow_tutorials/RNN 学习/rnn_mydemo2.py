@@ -38,7 +38,7 @@ vocab_size = len(dictionary)   # size : 112
 ## RNN 模型
 # Parameters
 learning_rate = 0.001
-training_iters = 2000
+training_iters = 5000
 display_step = 1000
 n_input = 3
 
