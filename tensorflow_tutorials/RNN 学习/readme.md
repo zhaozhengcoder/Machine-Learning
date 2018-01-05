@@ -1,4 +1,4 @@
-## RNN 读《伊索寓言》 来预测下一个词汇
+﻿## RNN 读《伊索寓言》 来预测下一个词汇
 
 用示例短文（出自《伊索寓言》）训练一个RNN来预测下一个单词（就像输入法里常见的“联想”功能。
 
@@ -22,7 +22,32 @@
 
 
 
-PS :
+### todo1 
+
+这个还没有写完，rnn_demo2.py 的情况可以根据从3个输入的词汇，输出下一个词汇。
+那么，如何让它写出一篇文章呢？
+
+
+```
+把预测输出当作下一个字符，再形成新的输入。比如上面的输入时"had a general"，预测的是"council"，然后再把"a general council"当做输入，又预测了下一个单词"to"，以此类推。
+
+最后，LSTM创造了一个还算是人话的故事：
+
+had a general council to consider what measures they could take to outwit their common enemy , the cat . some said this , and some said that but at last a young mouse got
+
+
+作者：Kaiser
+链接：https://zhuanlan.zhihu.com/p/27237560
+
+```
+
+### todo2
+
+因为我们在非常关键的一步做了极大地简化，那就是词汇的编码表征。这里用的是非常低效的独热向量，112个单词的状态空间，就有长度为112的输入/输出向量，而牛津辞典有170000多个单词，即便常用词也有好几万，这个计算量和冗余量会非常之大，引发“维数灾难”。
+并且，用独热码对语言进行编码，丢失了词汇之间的关联信息，更好的方法是Word2Vec
+
+
+### PS :
 
 参考GitHub ： https://github.com/roatienza/Deep-Learning-Experiments/tree/master/Experiments/Tensorflow/RNN
 
