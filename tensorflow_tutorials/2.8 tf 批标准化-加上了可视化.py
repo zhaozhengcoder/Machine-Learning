@@ -4,12 +4,15 @@ import matplotlib.pyplot as plt
 
 """
 这是一个7层的网络
-(sample * 1)-->(1,30)-->(30,30)-->(30,30)-->(30,30)-->(30,30)-->(30,1)
+(sample * 1)-->(1,30)-->(30,30)-->(30,30)-->(30,30)-->(30,30)-->(30,30)-->(30,1)
 
 这已经是一个比较深的神经网络了
 如果不使用批标准化，那么传统的神经网络就会出现梯度消失
 
 但是，使用了批标准化之后，就不会出现这种情况
+
+
+这个文件增加了 plot_his 函数
 """
 
 
@@ -22,6 +25,29 @@ def fix_seed(seed=1):
     # reproducible
     np.random.seed(seed)
     tf.set_random_seed(seed)
+
+def plot_his(inputs, inputs_norm):
+    # plot histogram for the inputs of every layer
+    for j, all_inputs in enumerate([inputs, inputs_norm]):
+        for i, input in enumerate(all_inputs):
+            plt.subplot(2, len(all_inputs), j*len(all_inputs)+(i+1))
+            plt.cla()
+            if i == 0:
+                the_range = (-7, 10)
+            else:
+                the_range = (-1, 1)
+            plt.hist(input.ravel(), bins=15, range=the_range, color='#FF5733')
+            plt.yticks(())
+            if j == 1:
+                plt.xticks(the_range)
+            else:
+                plt.xticks(())
+            ax = plt.gca()
+            ax.spines['right'].set_color('none')
+            ax.spines['top'].set_color('none')
+        plt.title("%s normalizing" % ("Without" if j == 0 else "With"))
+    plt.draw()
+    plt.pause(0.01)
 
 
 
@@ -75,6 +101,7 @@ def build_net(xs,ys,norm):
         epsilon = 0.001 
         xs = tf.nn.batch_normalization(xs, fc_mean, fc_var, shift, scale, epsilon)
     
+    # 没有批处理的从这里开始执行
     # 记录每一层的输入
     layers_inputs=[xs]
 
@@ -84,15 +111,18 @@ def build_net(xs,ys,norm):
         
         #show 
         #print ("no : ",l_n , " : ", layers_inputs[l_n].get_shape()," , get_shape()[1] : ",layers_inputs[l_n].get_shape()[1])
-
+        print ("in size : ",in_size)
         output= add_layer(layer_input,in_size,N_HIDDEN_UNITS,ACTIVATION,norm)
         #这一层的输出，是下一层的输入
         layers_inputs.append(output)
-
+    
+    # 最后的预测值
     prediction = add_layer(layers_inputs[-1], 30, 1, activation_function=None)
-
+    # 计算cost
     cost = tf.reduce_mean(tf.reduce_sum(tf.square(ys - prediction), reduction_indices=[1]))
     train_op = tf.train.GradientDescentOptimizer(0.001).minimize(cost)
+    # layers_inputs 每一层的输入（或者可以理解为下一层的输出）
+    # 所以这里返回的是一个list
     return [train_op, cost, layers_inputs]
 
 
@@ -132,7 +162,16 @@ record_step = 5
 for i in range(250):
     if i % 50 == 0:
         # plot histogram
+        # all_inputs 和 all_inputs_norm 分别表示的是，有批处理和无批处理两种情况下，分别的每一层的输入值（8个输入），这一个list的type
         all_inputs, all_inputs_norm = sess.run([layers_inputs, layers_inputs_norm], feed_dict={xs: x_data, ys: y_data})
+        print ("all_inputs : ",len(all_inputs))
+        print ("all_inputs_norm : ",len(all_inputs_norm))
+        #print ("  --> : " ,all_inputs[0])                            #len -->  8
+        print ("all_inputs[0] , shape --> : " ,all_inputs[0].shape)   #all_inputs[0] , shape --> :  (2500, 1)
+        print ("all_inputs[1] , shape --> : " ,all_inputs[1].shape)   #all_inputs[1] , shape --> :  (2500, 30)
+        print ("all_inputs[2] , shape --> : " ,all_inputs[2].shape)   #all_inputs[2] , shape --> :  (2500, 30)
+        print ("all_inputs[3] , shape --> : " ,all_inputs[3].shape)   #all_inputs[3] , shape --> :  (2500, 30)
+        print ("all_inputs[7] , shape --> : " ,all_inputs[7].shape)   #all_inputs[7] , shape --> :  (2500, 30)
         #plot_his(all_inputs, all_inputs_norm)
 
     # train on batch
