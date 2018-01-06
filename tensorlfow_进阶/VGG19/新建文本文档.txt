@@ -1,0 +1,4 @@
+python3 testModel.py folder testModel
+
+
+使用vgg分类图片
