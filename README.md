@@ -17,6 +17,16 @@ http://www.jianshu.com/p/1905bf78f0bd
 4. lstm——预测时间序列
 
 
-5. tensorflow 学习
+5. tensorflow 学习教程
+
+    使用tensorflow 搭建常见的网络模型，包括：
+    线性回归，逻辑回归，神经网络，卷积神经网络，循环神经网络，lstm长短记忆模型，值编码器等
+
+
+6. tensorflow 进阶教程
+    
+    VGG -19 模型
+    
+    neural-style 模型
 
     
