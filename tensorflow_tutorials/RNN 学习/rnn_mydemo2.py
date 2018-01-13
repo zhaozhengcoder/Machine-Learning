@@ -12,6 +12,7 @@ def read_file():
     content=[]
     with open(training_file,'r') as f:
         for line in f.readlines():
+            # line 表示读到数据的每一行，linelist是按照空格切分成一个list
             linelist=line.strip().split()
             for i in linelist:
                 content.append(i.strip())
@@ -60,7 +61,6 @@ biases = {
 def RNN(x, weights, biases):
     batch_size=1
     x = tf.reshape(x, [batch_size,n_input,1])          # (1,3,1) 相当于batch =1 
-
     # rnn 
     cell = tf.contrib.rnn.BasicLSTMCell(n_hidden)
     init_state = cell.zero_state(batch_size, dtype=tf.float32)
