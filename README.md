@@ -17,16 +17,27 @@ http://www.jianshu.com/p/1905bf78f0bd
 4. lstm——预测时间序列
 
 
-5. tensorflow 学习教程
+5. tensorflow_tutorials
 
-    使用tensorflow 搭建常见的网络模型，包括：
-    线性回归，逻辑回归，神经网络，卷积神经网络，循环神经网络，lstm长短记忆模型，值编码器等
+    一个tensorflow入门教程，包括一些tf的基本语法和tf搭建一些常用网络模型的demo。使用tensorflow 搭建常见的网络模型，包括：
+
+    线性回归，逻辑回归，神经网络，卷积神经网络，循环神经网络，lstm长短记忆模型，自编码器等
 
 
-6. tensorflow 进阶教程
-    
+6. tensorflow_进阶
+    这是一个tensorflow的进阶demo，在学会了一些基本的网络模型之后，试着搭建一些比较复杂的网络。包括：
+
     VGG -19 模型
     
     neural-style 模型
+
+7. 常用的机器学习算法
+
+    这个目录下面主要是李航《统计学习方法》，西瓜苏《机器学习》的读书笔记。整理一些机器学习的算法，包括：
+
+    PCA , SVM , K-means , 贝叶斯 ，KNN 等。
+
+
+
 
     
