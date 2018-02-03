@@ -57,6 +57,10 @@
 
 
 #### others :
+
 我的blog ： https://www.jianshu.com/nb/12943536 
+
+关于传统算法在GitHub上面整理了一下，欢迎共同讨论：https://github.com/zhaozhengcoder/Algorithm
+
 
     
