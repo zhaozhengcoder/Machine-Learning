@@ -112,22 +112,24 @@ def write_image(path, image):
 
 def main():
     net = build_vgg19(VGG_MODEL)
+    # 内容图片
     content_img = read_image(CONTENT_IMG)
+    # 风格图片
     style_img = read_image(STYLE_IMG)
+    # 噪声图片
     noise_img = np.random.uniform(-20, 20, (1, IMAGE_H, IMAGE_W, 3)).astype('float32')
 
-    
     sess = tf.Session()
     init = tf.global_variables_initializer()
     sess.run(init)
 
-    #content_img
+    #把content_img作为Vgg的输入，获得每一次的输出，存在content_outputs里面
     sess.run([net['input'].assign(content_img)])
     content_outputs={}
     for item in CONTENT_LAYERS:
         content_outputs[item[0]]=sess.run(net[item[0]])
 
-    #style_img
+    #把style_img作为Vgg的输入，获得每一次的输出，存在style_outputs里面
     sess.run([net['input'].assign(style_img)])
     style_outputs={}
     for item in STYLE_LAYERS:
@@ -139,6 +141,8 @@ def main():
     for key in style_outputs:
         print ('style : ',key)
 
+    #计算loss
+    #这里的key指的是某一层；content_outputs[key]是vgg预训练模型中每一层的输出；net[key]而是网络不断迭代后每一层的输出
     cost_content=sum([build_content_loss(content_outputs[key],net[key]) for key in content_outputs])
     cost_style  =sum([build_style_loss  (style_outputs[key],net[key])   for key in style_outputs  ])
     #cost_content=cost_content+sum(build_content_loss(content_outputs[key],net[key]))
@@ -149,7 +153,7 @@ def main():
 
     #noise_img 
     sess.run(tf.global_variables_initializer())
-    sess.run(net['input'].assign( INI_NOISE_RATIO* noise_img + (1.-INI_NOISE_RATIO) * content_img))
+    sess.run(net['input'].assign( INI_NOISE_RATIO * noise_img + (1.-INI_NOISE_RATIO) * content_img))
 
     #print ("cost_content ",cost_content,"  type: ",type(cost_content))
     #print ("cost_total ",cost_total,"  ",type(cost_total))
