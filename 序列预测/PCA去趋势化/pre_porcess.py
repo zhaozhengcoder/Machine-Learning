@@ -4,6 +4,8 @@ import os
 import numpy as np 
 import matplotlib.pyplot as plt 
 import pickle
+import pca
+import pickle
 
 def read_excel(filepath):
     df = pd.read_excel(filepath,skip_footer=1)
@@ -108,6 +110,24 @@ def pre_process():
     arr = transfer(dfs)
     return arr
 
+
+def mypickle(filepath,data):
+    abs_path='C:/Users/wwwa8/Documents/GitHub/Machine-Learning/序列预测/PCA去趋势化/'
+    f=open(abs_path+filepath,'wb')
+    pickle.dump(data,f)
+    f.close()
+
 if __name__ =="__main__":
     arr = pre_process()
     print ("shape : ",arr.shape)
+    pca_obj=pca.PCA(arr,2)
+    #print (pca_obj.main_x.shape)
+    #print (pca_obj.rest_x.shape)
+
+    mypickle('dump_arr.txt',arr)
+    mypickle('dump_main_x.txt',pca_obj.main_x)
+    mypickle('dump_rest_x.txt',pca_obj.rest_x)
+
+    
+
+
