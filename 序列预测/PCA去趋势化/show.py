@@ -14,19 +14,21 @@ def myload(filename):
     f.close()
     return data
 
+def show1(arr):
+    for item in arr:
+        plt.plot(item)
+    plt.show()
 
-def show(main_x,rest_x):
-    #for item in main_x:
-    #    plt.plot(item)
+def show2(main_x,rest_x):
+    for item in main_x:
+        plt.plot(item)
     for item in rest_x:
         plt.plot(item)
     plt.show()
     
-
 if __name__=="__main__":
-    arr = myload("dump_arr.txt")
-    main_x = myload("dump_main_x.txt")
-    rest_x = myload("dump_rest_x.txt")
-    show(arr,arr)
-
-
+    arr = myload("dump_arr_9-13.txt")
+    main_x = myload("dump_main_x_9-13.txt")
+    rest_x = myload("dump_rest_x_9-13.txt")
+    show1(arr)
+    show2(main_x,rest_x)

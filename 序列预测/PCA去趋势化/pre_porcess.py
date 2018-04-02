@@ -86,12 +86,31 @@ def transfer(data):
             arr[i,j]=data[i].iloc[j,vol_col_index]
     return arr
 
+# 将dfs聚合
+def merge_dfs(dfs,merge_step=3):
+    begin = 0
+    end = int(dfs[0].shape[0]/3)
+    ret_dfs=[]
+    for df in dfs:
+        ret_df = pd.DataFrame(columns=['road','vol','speed','last-update-time'])
+        for step in range(begin,end):
+            vol_item = df.iloc[step*merge_step:(step+1)*merge_step]['vol'].mean()
+            speed_item =  df.iloc[step*merge_step:(step+1)*merge_step]['speed'].mean()
+            name = df.iloc[step*merge_step]['road']
+            time = df.iloc[step*merge_step]['last-update-time']
+            ret_df.loc[ret_df.shape[0]]=[name,vol_item,speed_item,time]
+        ret_dfs.append(ret_df)
+    print ("ori dfs shape is : ",dfs[0].shape)
+    print ("ret dfs shape is : ",ret_dfs[0].shape)
+    return ret_dfs
+
+
 def pre_process():
     abspath='C:/Users/wwwa8/Documents/GitHub/Machine-Learning/序列预测/PCA去趋势化/7.xls'
     #filepath='7.xls'
     df = read_excel(abspath)
     # 起始日期
-    days=range(9,17)
+    days=range(9,13)
     # 每一天每一分钟对应一个点的格式
     dfs=[]
     begin_hour = 0
@@ -107,6 +126,8 @@ def pre_process():
     dfs = default_fill(dfs)
     #过滤异常值，特别大的，特别小的
     df_filter(dfs)
+    # 按分钟聚合
+    dfs = merge_dfs(dfs,merge_step=3)
     arr = transfer(dfs)
     return arr
 
@@ -124,10 +145,6 @@ if __name__ =="__main__":
     #print (pca_obj.main_x.shape)
     #print (pca_obj.rest_x.shape)
 
-    mypickle('dump_arr.txt',arr)
-    mypickle('dump_main_x.txt',pca_obj.main_x)
-    mypickle('dump_rest_x.txt',pca_obj.rest_x)
-
-    
-
-
+    mypickle('dump_arr_9-13.txt',arr)
+    mypickle('dump_main_x_9-13.txt',pca_obj.main_x)
+    mypickle('dump_rest_x_9-13.txt',pca_obj.rest_x)
