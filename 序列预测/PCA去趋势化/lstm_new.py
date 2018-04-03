@@ -22,7 +22,14 @@ def myload(filename):
     f.close()
     return data
 
-rest_x = myload("dump_rest_x_9-13.txt")
+#rest_x = myload("dump_rest_x_9-13.txt")
+#arr = myload("dump_arr_9-13.txt")
+#main_x = myload("dump_main_x_9-13.txt")
+
+rest_x = myload("dump_rest_x.txt")
+arr = myload("dump_arr.txt")
+main_x = myload("dump_main_x.txt")
+
 
 rest_x = rest_x.reshape(-1,1)
 
@@ -71,7 +78,7 @@ model = Sequential()
 model.add(LSTM(3, input_shape=(1, look_back)) )
 model.add(Dense(1)) 
 model.compile(loss='mean_squared_error', optimizer='adam') 
-model.fit(trainX, trainY, epochs=30, batch_size=1, verbose=2)
+model.fit(trainX, trainY, epochs=20, batch_size=1, verbose=2)
 
 # make predictions
 trainPredict = model.predict(trainX)
@@ -118,8 +125,7 @@ plt.show()
 
 # Test Score: 11.96 RMSE
 
-arr = myload("dump_arr_9-13.txt")
-main_x = myload("dump_main_x_9-13.txt")
+
 
 arr = arr.reshape(-1,1)
 main_x = main_x.reshape(-1,1)
