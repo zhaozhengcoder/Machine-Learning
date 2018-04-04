@@ -133,12 +133,12 @@ abs_path='C:/Users/wwwa8/Documents/GitHub/Machine-Learning/序列预测/PCA去�
 if __name__=="__main__":
     road_dfs=[]
     #每一个filename表示一条路的数据
-    for filename in range(1,3):
+    for filename in range(1,21):
         #filepath='1.xls'
         filepath = abs_path+str(filename)+'.xls'
         df = read_excel(filepath)
         #起始日期
-        days=range(8,10)
+        days=range(8,15)
         #每一天每一分钟对应一个点的格式
         dfs=[]
         begin_hour = 0
