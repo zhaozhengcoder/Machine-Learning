@@ -64,7 +64,9 @@ def createdataset(data):
 
 def myload():
     filename = 'dump2.txt'
-    f = open('data/' + filename, 'rb')
+    #f = open('./data/' + filename, 'rb')
+    abspath='C:/Users/wwwa8/Documents/GitHub/Machine-Learning/序列预测/PCA去趋势化/dev2/data/'
+    f = open(abspath + filename, 'rb')
     data = pickle.load(f)
     f.close()
     # print (data)   # 路段数 * 每个路段的信息（df的数据结构）
@@ -102,14 +104,17 @@ if __name__ == "__main__":
     time_step = 2
     data = myload()  # data是一个list，里面是df格式的数据
     # transfer
-    dataset = createdataset(data)  # dataset 的格式是 （路段 * 每一天 * 一天内的数据）20 * 7 * 480
+    dataset = createdataset(data)                  # dataset 的格式是 （路段 * 每一天 * 一天内的数据）20 * 14 * 480
     dataset_main, dataset_rest = use_pca(dataset)  # dataset_main = 路段 * 每一个路段里面的主成分 ; dataset_rest = 路段 * 每一个路段里面的偏差
     days, dnum = dataset_main[0].shape
-    y_main = dataset_main[0][time_step:days, :]
-    trainX, trainY = split_dataset(dataset_rest)
-    train_x_raw = trainX[0]
-    train_y_raw = np.reshape(trainY[0], (days - time_step, 480))
 
+    y_main = dataset_main[0][time_step:days, :]    # y的主成分[2~14] shape 12 * 2 * 480
+    #将偏差数据 分割 成输入和输出
+    trainX, trainY = split_dataset(dataset_rest)   #trainX 的shape 20 * 12 * 2 *480 ； trainY 的shape 20 * 12 * 1 *480
+
+    train_x_raw = trainX[0]  #取了第一条路段来进行预测 train_x_raw的sahpe ：12 * 2 *480
+    train_y_raw = np.reshape(trainY[0], (days - time_step, 480))  # train_y_raw的shape 12 * 480
+    # 归一化
     x_max = train_x_raw.max()
     x_min = train_x_raw.min()
     y_max = train_y_raw.max()
@@ -118,6 +123,13 @@ if __name__ == "__main__":
     train_x = (train_x_raw - x_min) / (x_max - x_min)
     train_y = (train_y_raw - y_min) / (y_max - y_min)
 
+    # test
+    test_num = 3
+    test_x = train_x[0:test_num]
+    test_y = train_y[0:test_num]
+    
+
+    # 放入lstm训练
     # lstm的hyper-parameter
 
     hidden_size = 400
@@ -126,7 +138,7 @@ if __name__ == "__main__":
     dropout_keep_rate = 1
 
     # 根据输入数据来决定，train_num训练集大小,input_size输入维度
-    train_num, time_step_size, input_size = train_x.shape
+    train_num, time_step_size, input_size = train_x.shape     # sahpe ：12 * 2 *480
     # output_size输出的结点个数
     _, output_size = train_y.shape
 
@@ -160,7 +172,7 @@ if __name__ == "__main__":
     mae_result = []
     rmse_result = []
 
-
+    # 获得训练的指标
     def get_metrics(y, pred_y):
         mre = np.mean(np.abs(y - pred_y) / y)
         mae = np.mean(np.abs(y - pred_y))
@@ -168,11 +180,11 @@ if __name__ == "__main__":
         return mre, mae, rmse
 
 
-    def print_to_console(i, train_y_pred):
-        train_y_pred_real = train_y_pred * (y_max - y_min) + y_min
-        train_y_real = train_y * (y_max - y_min) + y_min
-        plt.plot(range(dnum), train_y_real[0], 'b-')
-        plt.plot(range(dnum), train_y_pred_real[0], 'r-')
+    def print_to_console(i, train_y ,train_y_pred):
+        train_y_pred_real = train_y_pred * (y_max - y_min) + y_min  #反归一化
+        train_y_real = train_y * (y_max - y_min) + y_min    #train_y 是真实的y值，堆train_y 进行反归一化
+        plt.plot(range(dnum), train_y_real[0], 'b-')        #实际用蓝色
+        plt.plot(range(dnum), train_y_pred_real[0], 'r-')   #预测用红色
         plt.show()
         train_mre, train_mae, train_rmse = get_metrics(train_y_real, train_y_pred_real)
         print('epoch %d  train %.4f %.2f %.2f' % (i, train_mre, train_mae, train_rmse))
@@ -184,7 +196,13 @@ if __name__ == "__main__":
         if i % 50 == 0:
             feed_dict = {x_input: train_x, y_real: train_y, keep_prob: 1.0, batch_size: train_num}
             train_y_pred = sess.run(y_pred, feed_dict=feed_dict)
-            print_to_console(i, train_y_pred)
+            print_to_console(i,train_y, train_y_pred)
+        if i % 50 ==0:
+            print ("test : ")
+            feed_dict = {x_input: test_x, y_real: test_y, keep_prob: 1.0, batch_size: test_num}
+            test_y_pred = sess.run(y_pred, feed_dict=feed_dict)
+            print_to_console(i, test_y,test_y_pred)            
+            print ("--- test end ---")
 
     y_main = dataset_main[0][time_step:days, :]
     y_pre_real = y_main + train_y_pred * (y_max - y_min) + y_min
