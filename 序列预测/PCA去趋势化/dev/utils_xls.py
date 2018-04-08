@@ -138,7 +138,7 @@ if __name__=="__main__":
         filepath = abs_path+str(filename)+'.xls'
         df = read_excel(filepath)
         #起始日期
-        days=range(8,15)
+        days=range(7,21)    #days=range(8,15)
         #每一天每一分钟对应一个点的格式
         dfs=[]
         begin_hour = 0
@@ -169,6 +169,6 @@ if __name__=="__main__":
     #heatmap2(data)
 
     #序列化
-    mypickle('dump.txt',road_dfs)
+    mypickle('dump3.txt',road_dfs)
 
     
