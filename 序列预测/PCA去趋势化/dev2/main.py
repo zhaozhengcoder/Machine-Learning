@@ -123,15 +123,18 @@ if __name__ == "__main__":
     train_x = (train_x_raw - x_min) / (x_max - x_min)
     train_y = (train_y_raw - y_min) / (y_max - y_min)
 
-    # test
-    test_num = 3
-    test_x = train_x[0:test_num]
-    test_y = train_y[0:test_num]
-    
+    # 构造训练和测试集
+    total_len = train_x.shape[0]
+    train_len = int(total_len * 0.75)
+    test_len = int(total_len *0.25)
+
+    test_x = train_x[train_len:]
+    test_y = train_y[train_len:]
+    train_x =train_x[0:train_len]
+    train_y =train_y[0:train_len]
 
     # 放入lstm训练
     # lstm的hyper-parameter
-
     hidden_size = 400
     layer_num = 1
     max_epoch = 5000
@@ -199,7 +202,7 @@ if __name__ == "__main__":
             print_to_console(i,train_y, train_y_pred)
         if i % 50 ==0:
             print ("test : ")
-            feed_dict = {x_input: test_x, y_real: test_y, keep_prob: 1.0, batch_size: test_num}
+            feed_dict = {x_input: test_x, y_real: test_y, keep_prob: 1.0, batch_size: test_len}
             test_y_pred = sess.run(y_pred, feed_dict=feed_dict)
             print_to_console(i, test_y,test_y_pred)            
             print ("--- test end ---")
