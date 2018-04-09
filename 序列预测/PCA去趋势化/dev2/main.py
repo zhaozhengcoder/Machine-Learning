@@ -108,7 +108,7 @@ if __name__ == "__main__":
     dataset_main, dataset_rest = use_pca(dataset)  # dataset_main = 路段 * 每一个路段里面的主成分 ; dataset_rest = 路段 * 每一个路段里面的偏差
     days, dnum = dataset_main[0].shape
 
-    y_main = dataset_main[0][time_step:days, :]    # y的主成分[2~14] shape 12 * 2 * 480
+    y_main = dataset_main[0][time_step:days, :]    # y_main的主成分[2~14] shape 12 * 2 * 480
     #将偏差数据 分割 成输入和输出
     trainX, trainY = split_dataset(dataset_rest)   #trainX 的shape 20 * 12 * 2 *480 ； trainY 的shape 20 * 12 * 1 *480
 
@@ -137,7 +137,7 @@ if __name__ == "__main__":
     # lstm的hyper-parameter
     hidden_size = 400
     layer_num = 1
-    max_epoch = 5000
+    max_epoch = 2000
     dropout_keep_rate = 1
 
     # 根据输入数据来决定，train_num训练集大小,input_size输入维度
@@ -177,39 +177,65 @@ if __name__ == "__main__":
 
     # 获得训练的指标
     def get_metrics(y, pred_y):
+        #替换为0的元素
+        y[y<0.00001]=0.00001
         mre = np.mean(np.abs(y - pred_y) / y)
         mae = np.mean(np.abs(y - pred_y))
         rmse = np.sqrt(np.mean(np.square(y - pred_y)))
         return mre, mae, rmse
 
 
-    def print_to_console(i, train_y ,train_y_pred):
-        train_y_pred_real = train_y_pred * (y_max - y_min) + y_min  #反归一化
-        train_y_real = train_y * (y_max - y_min) + y_min    #train_y 是真实的y值，堆train_y 进行反归一化
-        plt.plot(range(dnum), train_y_real[0], 'b-')        #实际用蓝色
-        plt.plot(range(dnum), train_y_pred_real[0], 'r-')   #预测用红色
+    def print_to_console(i, train_y ,train_y_pred,flag_istrain):
+        train_y_pred_real = train_y_pred * (y_max - y_min) + y_min  # 反归一化
+        train_y_real = train_y * (y_max - y_min) + y_min            # train_y 是真实的y值，堆train_y 进行反归一化
+        plt.plot(range(dnum), train_y_real[0], 'b-',label='true')        # 实际用蓝色
+        plt.plot(range(dnum), train_y_pred_real[0], 'r-',label='prediction')   # 预测用红色
         plt.show()
         train_mre, train_mae, train_rmse = get_metrics(train_y_real, train_y_pred_real)
-        print('epoch %d  train %.4f %.2f %.2f' % (i, train_mre, train_mae, train_rmse))
-
+        if(flag_istrain==1):
+            #print('epoch %d  train :  %.4f %.2f %.2f' % (i, train_mre, train_mae, train_rmse))
+            print ("epoch {} train : {} {} {} ".format(i, train_mre, train_mae, train_rmse))
+        else:
+            #print('epoch %d  test :  %.4f %.2f %.2f' % (i, train_mre, train_mae, train_rmse))
+            print ("epoch {} test : {} {} {} ".format(i, train_mre, train_mae, train_rmse))
 
     for i in range(1, max_epoch + 1):
         feed_dict = {x_input: train_x, y_real: train_y, keep_prob: dropout_keep_rate, batch_size: train_num}
         sess.run(train_op, feed_dict=feed_dict)
-        if i % 50 == 0:
+        if i % 500 == 0:
             feed_dict = {x_input: train_x, y_real: train_y, keep_prob: 1.0, batch_size: train_num}
             train_y_pred = sess.run(y_pred, feed_dict=feed_dict)
-            print_to_console(i,train_y, train_y_pred)
-        if i % 50 ==0:
-            print ("test : ")
+            #print ("train_y_pred : ",train_y_pred.shape)    #(9,480)
+            print_to_console(i,train_y, train_y_pred,1)
+        if i % 500 ==0:
             feed_dict = {x_input: test_x, y_real: test_y, keep_prob: 1.0, batch_size: test_len}
             test_y_pred = sess.run(y_pred, feed_dict=feed_dict)
-            print_to_console(i, test_y,test_y_pred)            
-            print ("--- test end ---")
+            #print ("test_y_pred : ",test_y_pred.shape)      #(3,480)
+            print_to_console(i, test_y,test_y_pred,0)            
 
-    y_main = dataset_main[0][time_step:days, :]
-    y_pre_real = y_main + train_y_pred * (y_max - y_min) + y_min
-    y_raw = y_main + train_y * (y_max - y_min) + y_min
-    plt.plot(y_raw[0])
-    plt.plot(y_pre_real[0])
+    #to-do
+    y_main = dataset_main[0][time_step:days, :]    # y_main的主成分[2~14] shape 12 * 2 * 480
+
+    y_pre_train_real = y_main[:train_len] + train_y_pred * (y_max - y_min) + y_min   #train_y_pred的shape是 ：(9,480)
+    y_raw_train = y_main[:train_len] + train_y * (y_max - y_min) + y_min   # true
+    plt.plot(y_raw_train[0])  #只画第一天
+    plt.plot(y_pre_train_real[0])
+    print ("train mre, mae, rmse : " , get_metrics(y_raw_train[0],y_pre_train_real[0]))
     plt.show()
+    
+    y_pre_test_real = y_main[train_len:] + test_y_pred * (y_max - y_min) + y_min
+    y_raw_test = y_main[train_len:] + test_y * (y_max - y_min) + y_min   # true
+    plt.plot(y_raw_test[0])
+    plt.plot(y_pre_test_real[0])  #只画第一天
+    for i in range(0,test_len):
+        print ("test ",i,"  mre, mae, rmse : " , get_metrics(y_raw_test[i],y_pre_test_real[i]))
+    plt.show()
+
+"""
+.\main.py:180: RuntimeWarning: divide by zero encountered in true_divide
+  mre = np.mean(np.abs(y - pred_y) / y)
+train mre, mae, rmse :  (inf, 0.016956071535210518, 0.021428719214643118)
+test  0   mre, mae, rmse :  (inf, 0.7439131614432313, 1.0388284657205893)
+test  1   mre, mae, rmse :  (inf, 0.7439131614432313, 1.0388284657205893)
+test  2   mre, mae, rmse :  (inf, 0.7439131614432313, 1.0388284657205893)
+"""
