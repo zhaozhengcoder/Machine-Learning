@@ -130,8 +130,8 @@ if __name__ == "__main__":
 
     test_x = train_x[train_len:]
     test_y = train_y[train_len:]
-    train_x =train_x[0:train_len]
-    train_y =train_y[0:train_len]
+    #train_x =train_x[0:train_len]
+    #train_y =train_y[0:train_len]
 
     # 放入lstm训练
     # lstm的hyper-parameter
@@ -215,12 +215,12 @@ if __name__ == "__main__":
     for i in range(1, max_epoch + 1):
         feed_dict = {x_input: train_x, y_real: train_y, keep_prob: dropout_keep_rate, batch_size: train_num}
         sess.run(train_op, feed_dict=feed_dict)
-        if i % 50 == 0:
+        if i % 100 == 0:
             feed_dict = {x_input: train_x, y_real: train_y, keep_prob: 1.0, batch_size: train_num}
             train_y_pred = sess.run(y_pred, feed_dict=feed_dict)
             #print ("train_y_pred : ",train_y_pred.shape)    #(9,480)
             print_to_console(i,train_y, train_y_pred,1)
-        if i % 50 ==0:
+        if i % 100 ==0:
             feed_dict = {x_input: test_x, y_real: test_y, keep_prob: 1.0, batch_size: test_len}
             test_y_pred = sess.run(y_pred, feed_dict=feed_dict)
             #print ("test_y_pred : ",test_y_pred.shape)      #(3,480)
@@ -228,13 +228,15 @@ if __name__ == "__main__":
 
     #to-do
     y_main = dataset_main[0][time_step:days, :]    # y_main的主成分[2~14] shape 12 * 2 * 480
-    y_pre_train_real = y_main[:train_len] + train_y_pred * (y_max - y_min) + y_min   #train_y_pred的shape是 ：(9,480)
-    y_raw_train = y_main[:train_len] + train_y * (y_max - y_min) + y_min   # true
+
+    y_pre_train_real = y_main + train_y_pred * (y_max - y_min) + y_min   #train_y_pred的shape是 ：(9,480)
+    y_raw_train = y_main + train_y * (y_max - y_min) + y_min   # true
     plt.plot(y_raw_train[0])  #只画第一天
     plt.plot(y_pre_train_real[0])
     plt.show()
     for i in range(0,train_len):
         print("train mre, mae, rmse : ", get_metrics(y_pre_train_real[i], y_raw_train[i]))
+
 
     y_pre_test_real = y_main[train_len:] + test_y_pred * (y_max - y_min) + y_min
     y_raw_test = y_main[train_len:] + test_y * (y_max - y_min) + y_min   # true
