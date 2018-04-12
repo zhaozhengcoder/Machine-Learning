@@ -137,8 +137,8 @@ if __name__ == "__main__":
     # lstm的hyper-parameter
     hidden_size = 400
     layer_num = 1
-    max_epoch = int(2000 * 0.6)
-    dropout_keep_rate = 1
+    max_epoch = int(2000 * 0.5)
+    dropout_keep_rate = 0.5
 
     # 根据输入数据来决定，train_num训练集大小,input_size输入维度
     train_num, time_step_size, input_size = train_x.shape     # sahpe ：12 * 2 *480
@@ -246,7 +246,7 @@ if __name__ == "__main__":
         print("test ",i,"  mre, mae, rmse : ", get_metrics(y_pre_test_real[i],y_raw_test[i]))
     plt.show()
 
-
+### 大功告成 ！！！！
 """
 train mre, mae, rmse :  (-0.029828510559539646, 0.029079688831018635, 0.03781274442185763)
 train mre, mae, rmse :  (-0.014006342486120728, 0.029752569218725298, 0.03840164135038352)
