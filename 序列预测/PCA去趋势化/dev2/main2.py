@@ -137,8 +137,8 @@ if __name__ == "__main__":
     # lstm的hyper-parameter
     hidden_size = 400
     layer_num = 1
-    max_epoch = int(2000 * 0.5)
-    dropout_keep_rate = 0.5
+    max_epoch = int(3000)
+    dropout_keep_rate = 0.7
 
     # 根据输入数据来决定，train_num训练集大小,input_size输入维度
     train_num, time_step_size, input_size = train_x.shape     # sahpe ：12 * 2 *480
@@ -185,19 +185,15 @@ if __name__ == "__main__":
         rmse = np.sqrt(np.mean(np.square(y - pred_y)))
         return mre, mae, rmse
 
-    def cal_mre(y,y_pre):
-        y[y < 0.1] = 0.1
-        diff = np.abs(y-y_pre)
-        mre = np.mean(diff/y)
-        print("cal mre is : ", mre)
 
-    def print_to_console(i, train_y ,train_y_pred,flag_istrain):
+    def print_to_console(i, train_y ,train_y_pred,flag_istrain,isshow):
         train_y_pred_real = train_y_pred * (y_max - y_min) + y_min  # 反归一化
         train_y_real = train_y * (y_max - y_min) + y_min            # train_y 是真实的y值，堆train_y 进行反归一化
 
-        plt.plot(range(dnum), train_y_real[0], 'b-',label='true')        # 实际用蓝色
-        plt.plot(range(dnum), train_y_pred_real[0], 'r-',label='prediction')   # 预测用红色
-        plt.show()
+        if(isshow==1):
+            plt.plot(range(dnum), train_y_real[0], 'b-',label='true')        # 实际用蓝色
+            plt.plot(range(dnum), train_y_pred_real[0], 'r-',label='prediction')   # 预测用红色
+            plt.show()
         """
         if (flag_istrain==1):
             plt.savefig("train"+str(i)+".png")
@@ -215,16 +211,16 @@ if __name__ == "__main__":
     for i in range(1, max_epoch + 1):
         feed_dict = {x_input: train_x, y_real: train_y, keep_prob: dropout_keep_rate, batch_size: train_num}
         sess.run(train_op, feed_dict=feed_dict)
-        if i % 100 == 0:
+        if i % 200 == 0:
             feed_dict = {x_input: train_x, y_real: train_y, keep_prob: 1.0, batch_size: train_num}
             train_y_pred = sess.run(y_pred, feed_dict=feed_dict)
             #print ("train_y_pred : ",train_y_pred.shape)    #(9,480)
-            print_to_console(i,train_y, train_y_pred,1)
-        if i % 100 ==0:
+            print_to_console(i,train_y, train_y_pred,1,0)
+        if i % 200 ==0:
             feed_dict = {x_input: test_x, y_real: test_y, keep_prob: 1.0, batch_size: test_len}
             test_y_pred = sess.run(y_pred, feed_dict=feed_dict)
             #print ("test_y_pred : ",test_y_pred.shape)      #(3,480)
-            print_to_console(i, test_y,test_y_pred,0)            
+            print_to_console(i, test_y,test_y_pred,0,0)
 
     #to-do
     y_main = dataset_main[0][time_step:days, :]    # y_main的主成分[2~14] shape 12 * 2 * 480

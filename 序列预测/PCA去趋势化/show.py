@@ -26,9 +26,18 @@ def show2(main_x,rest_x):
         plt.plot(item)
     plt.show()
     
+def show_index(arr,index):
+    plt.xlabel("Index of time")
+    plt.ylabel("Traffic volume")
+    plt.plot(arr[index])
+    plt.show()
+    plt.close()
+    
 if __name__=="__main__":
     arr = myload("dump_arr_9-13.txt")
     main_x = myload("dump_main_x_9-13.txt")
     rest_x = myload("dump_rest_x_9-13.txt")
     show1(arr)
+    show1(main_x)
+    show1(rest_x)
     show2(main_x,rest_x)
