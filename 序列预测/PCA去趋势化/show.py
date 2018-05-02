@@ -35,7 +35,7 @@ def show_index(arr,index):
     
 #给横坐标由原来的0~480，变成现在的0~24，改变横坐标的比例
 def show_index_ticks(arr,index,pic_color,pic_label):
-    plt.xlabel("Index of time")
+    plt.xlabel("Time (hour)")
     plt.ylabel("Traffic volume")
     #图例
     plt.plot(arr[index],color=pic_color,label=pic_label)
