@@ -19,6 +19,74 @@ def show1(arr):
         plt.plot(item)
     plt.show()
 
+#给横坐标由原来的0~480，变成现在的0~24，改变横坐标的比例
+def show1_ticks(arr):
+    #改变x轴的刻度
+    x_kedu=[0,4,8,12,16,20,24]
+    orig_ticks = [i*20 for i in x_kedu]
+    new_ticks = x_kedu
+    plt.xticks(orig_ticks,new_ticks)
+    #改变y轴的刻度
+    y_kedu=[0,5,10,15,20]
+    y_orig_ticks = y_kedu
+    y_new_ticks =y_kedu
+    plt.yticks(y_orig_ticks,y_new_ticks)
+    
+    plt.xlabel("Time (hour)")
+    plt.ylabel("Traffic volume")
+
+    for index in range(arr.shape[0]):
+        plt.plot(arr[index])
+    plt.grid()
+    plt.show()
+
+
+def show1_ticks_average(arr):
+    #改变x轴的刻度
+    x_kedu=[0,4,8,12,16,20,24]
+    orig_ticks = [i*20 for i in x_kedu]
+    new_ticks = x_kedu
+    plt.xticks(orig_ticks,new_ticks)
+    #改变y轴的刻度
+    y_kedu=[0,5,10,15,20]
+    y_orig_ticks = y_kedu
+    y_new_ticks =y_kedu
+    plt.yticks(y_orig_ticks,y_new_ticks)
+    
+    plt.xlabel("Time (hour)")
+    plt.ylabel("Traffic volume")
+
+    #画一个平均的
+    avg = np.mean(arr,axis=0)
+    plt.plot(avg,label="main trend data")
+    plt.legend(loc='upper right')
+
+    plt.grid()
+    plt.show()
+
+
+def show1_ticks_residual(arr):
+    plt.xlabel("Time (hour)")
+    plt.ylabel("Traffic volume")
+    #改变x轴的刻度
+    x_kedu=[0,4,8,12,16,20,24]
+    orig_ticks = [i*20 for i in x_kedu]
+    new_ticks = x_kedu
+    plt.xticks(orig_ticks,new_ticks)
+    #residual 的 y轴的刻度
+    y_kedu=[-4,-2,0,2,4]
+    y_orig_ticks = y_kedu
+    y_new_ticks =y_kedu
+    plt.yticks(y_orig_ticks,y_new_ticks)
+
+    for index in range(arr.shape[0]):
+        plt.plot(arr[index])
+    #加上网格
+    plt.grid()
+    plt.show()
+
+
+
 def show2(main_x,rest_x):
     for item in main_x:
         plt.plot(item)
@@ -74,6 +142,23 @@ def show_index_ticks_residual(arr,index,pic_color,pic_label):
     plt.grid()
     plt.show()
 
+
+
+def show_hist(arr):
+    """
+    def normfun(x,mu,sigma):
+        pdf = np.exp(-((x - mu)**2)/(2*sigma**2)) / (sigma * np.sqrt(2*np.pi))
+        return pdf
+    #正态分布函数
+    x = np.arange(-5,5,0.1) 
+    y = normfun(x, 0, 50)
+    plt.plot(x,y)
+    plt.show()
+    """
+    arr=arr.reshape(-1)  #arr原来的shape是多维的，然后变成一维
+    plt.hist(arr,bins=100)  #绘制数据分布的直方图
+    plt.show()
+
 if __name__=="__main__":
     arr = myload("dump_arr_9-13.txt")
     main_x = myload("dump_main_x_9-13.txt")
@@ -86,6 +171,15 @@ if __name__=="__main__":
     #show_index(main_x,0)
     #show_index(rest_x,0)
 
-    show_index_ticks(arr,3,"black","traffic data flow")
-    show_index_ticks(main_x,3,"red","main trend data")
-    show_index_ticks_residual(rest_x,3,"blue","residual data")
+    #画原始数据，主要成分，偏差成分 (各画一条线)
+    #show_index_ticks(arr,3,"black","traffic data flow")
+    #show_index_ticks(main_x,3,"red","main trend data")
+    #show_index_ticks_residual(rest_x,3,"blue","residual data")
+
+    #
+    #show1_ticks(main_x)
+    #show1_ticks_average(main_x)
+    #show1_ticks_residual(rest_x)
+
+    #绘制偏差分布的直方图
+    show_hist(rest_x)
