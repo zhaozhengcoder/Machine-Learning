@@ -236,8 +236,9 @@ if __name__ == "__main__":
 
     y_pre_test_real = y_main[train_len:] + test_y_pred * (y_max - y_min) + y_min
     y_raw_test = y_main[train_len:] + test_y * (y_max - y_min) + y_min   # true
-    plt.plot(y_raw_test[0])
-    plt.plot(y_pre_test_real[0])  #只画第一天
+    plt.plot(y_pre_test_real[0],color='blue',label='prediction')  #只画第一天
+    plt.plot(y_raw_test[0], color='red', label='true')
+    plt.legend(loc='upper right')
     for i in range(0,test_len):
         print("test ",i,"  mre, mae, rmse : ", get_metrics(y_pre_test_real[i],y_raw_test[i]))
     plt.show()
