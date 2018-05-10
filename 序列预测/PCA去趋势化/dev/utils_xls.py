@@ -141,8 +141,8 @@ if __name__=="__main__":
         days=range(7,21)    #days=range(8,15)
         #每一天每一分钟对应一个点的格式
         dfs=[]
-        begin_hour = 0
-        end_hour = 24
+        begin_hour = 6   #6点
+        end_hour = 20    #20点
         for day in days:
             dfs.append(generate_data_byday(df,day,begin_hour,end_hour))
         for df in dfs:

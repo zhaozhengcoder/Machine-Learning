@@ -99,6 +99,31 @@ def use_pca(dataset):
         dataset_main.append(pca_obj.main_x)
     return dataset_main, dataset_rest
 
+name_count=0
+def show1_ticks(arr_true,arr_prediction):
+    #改变x轴的刻度
+    x_kedu=[0,4,8,12,16,20,24]
+    orig_ticks = [i*20 for i in x_kedu]
+    new_ticks = x_kedu
+    plt.xticks(orig_ticks,new_ticks)
+    #改变y轴的刻度
+    y_kedu=[0,5,10,15,20,25]
+    y_orig_ticks = y_kedu
+    y_new_ticks =y_kedu
+    plt.yticks(y_orig_ticks,y_new_ticks)
+    
+    plt.xlabel("Time (hour)")
+    plt.ylabel("Traffic volume")
+    plt.plot(arr_true,'b-',label='true')
+    plt.plot(arr_prediction,'r-',label='prediction')
+    plt.legend(loc='upper right')
+    plt.grid()
+    #plt.show()
+    global name_count
+    plt.savefig(str(name_count)+".png")
+    plt.close()
+    name_count+=1
+
 
 if __name__ == "__main__":
     time_step = 2
@@ -137,8 +162,8 @@ if __name__ == "__main__":
     # lstm的hyper-parameter
     hidden_size = 400
     layer_num = 1
-    max_epoch = int(3000)
-    dropout_keep_rate = 0.7
+    max_epoch = int(5000)
+    dropout_keep_rate = 0.4
 
     # 根据输入数据来决定，train_num训练集大小,input_size输入维度
     train_num, time_step_size, input_size = train_x.shape     # sahpe ：12 * 2 *480
@@ -164,10 +189,12 @@ if __name__ == "__main__":
     mse = tf.losses.mean_squared_error(y_real, y_pred)
     train_op = tf.train.AdamOptimizer(1e-3).minimize(mse)
 
-    config = tf.ConfigProto(allow_soft_placement=True, log_device_placement=True)
-    # 设置 GPU 按需增长
-    config.gpu_options.allow_growth = True
-    sess = tf.Session(config=config)
+    #设置 GPU 按需增长
+    #config = tf.ConfigProto(allow_soft_placement=True, log_device_placement=True)
+    #config.gpu_options.allow_growth = True
+    #sess = tf.Session(config=config)
+    sess = tf.Session()
+    
     # 初始化变量
     sess.run(tf.global_variables_initializer())
 
@@ -185,6 +212,16 @@ if __name__ == "__main__":
         rmse = np.sqrt(np.mean(np.square(y - pred_y)))
         return mre, mae, rmse
 
+    def cal_total(y_pre_test_real,y_raw_test):
+        test_mre=0.0
+        test_mae=0.0
+        test_rmse=0.0
+        for i in range(0,test_len):
+            res = get_metrics(y_pre_test_real[i],y_raw_test[i])
+            test_mre+=res[0]
+            test_mae+=res[1]
+            test_rmse+=res[2]
+        return test_mre/test_len,test_mae,test_rmse/test_len
 
     def print_to_console(i, train_y ,train_y_pred,flag_istrain,isshow):
         train_y_pred_real = train_y_pred * (y_max - y_min) + y_min  # 反归一化
@@ -211,50 +248,67 @@ if __name__ == "__main__":
     for i in range(1, max_epoch + 1):
         feed_dict = {x_input: train_x, y_real: train_y, keep_prob: dropout_keep_rate, batch_size: train_num}
         sess.run(train_op, feed_dict=feed_dict)
-        if i % 200 == 0:
+        iter_show=2000
+        if i % iter_show == 0:
             feed_dict = {x_input: train_x, y_real: train_y, keep_prob: 1.0, batch_size: train_num}
             train_y_pred = sess.run(y_pred, feed_dict=feed_dict)
             #print ("train_y_pred : ",train_y_pred.shape)    #(9,480)
-            print_to_console(i,train_y, train_y_pred,1,0)
-        if i % 200 ==0:
+            print_to_console(i,train_y, train_y_pred,1,isshow=0)
+        if i % iter_show ==0:
             feed_dict = {x_input: test_x, y_real: test_y, keep_prob: 1.0, batch_size: test_len}
             test_y_pred = sess.run(y_pred, feed_dict=feed_dict)
             #print ("test_y_pred : ",test_y_pred.shape)      #(3,480)
-            print_to_console(i, test_y,test_y_pred,0,0)
+            print_to_console(i, test_y,test_y_pred,0,isshow=1)
 
-    #to-do
+
+    #偏差数据+主成分数据 
     y_main = dataset_main[0][time_step:days, :]    # y_main的主成分[2~14] shape 12 * 2 * 480
-
     y_pre_train_real = y_main + train_y_pred * (y_max - y_min) + y_min   #train_y_pred的shape是 ：(9,480)
+
     y_raw_train = y_main + train_y * (y_max - y_min) + y_min   # true
-    plt.plot(y_raw_train[0])  #只画第一天
-    plt.plot(y_pre_train_real[0])
-    plt.show()
+    
+    #plt.plot(y_raw_train[0])  #只画第一天
+    #plt.plot(y_pre_train_real[0])
+    #plt.show()
+    show1_ticks(y_raw_train[0],y_pre_train_real[0])
+    show1_ticks(y_raw_train[1],y_pre_train_real[1])
+    show1_ticks(y_raw_train[2],y_pre_train_real[2])
+
     for i in range(0,train_len):
         print("train mre, mae, rmse : ", get_metrics(y_pre_train_real[i], y_raw_train[i]))
 
-
     y_pre_test_real = y_main[train_len:] + test_y_pred * (y_max - y_min) + y_min
     y_raw_test = y_main[train_len:] + test_y * (y_max - y_min) + y_min   # true
-    plt.plot(y_pre_test_real[0],color='blue',label='prediction')  #只画第一天
-    plt.plot(y_raw_test[0], color='red', label='true')
-    plt.legend(loc='upper right')
-    for i in range(0,test_len):
-        print("test ",i,"  mre, mae, rmse : ", get_metrics(y_pre_test_real[i],y_raw_test[i]))
+
+    #plt.plot(y_pre_test_real[0],color='blue',label='prediction')         # 只画第一天
+    #plt.plot(y_raw_test[0], color='red', label='true')
+    #plt.legend(loc='upper right')
+    show1_ticks(y_raw_test[0],y_pre_test_real[0])
+    show1_ticks(y_raw_test[1],y_pre_test_real[1])
+    show1_ticks(y_raw_test[2],y_pre_test_real[2])
+
+    print ("mre, mae, rmse :",cal_total(y_pre_test_real,y_raw_test))
     plt.show()
 
-### 大功告成 ！！！！
+
 """
-train mre, mae, rmse :  (-0.029828510559539646, 0.029079688831018635, 0.03781274442185763)
-train mre, mae, rmse :  (-0.014006342486120728, 0.029752569218725298, 0.03840164135038352)
-train mre, mae, rmse :  (0.01966588730859742, 0.030049372790911334, 0.03848749067185995)
-train mre, mae, rmse :  (0.0022712513481526657, 0.030908468525215952, 0.03962029519589479)
-train mre, mae, rmse :  (-0.047443900425408074, 0.025280013859965516, 0.03241163721057964)
-train mre, mae, rmse :  (-0.00021344378219514127, 0.030201234940533044, 0.03853920047170086)
-train mre, mae, rmse :  (-0.0031145057760686525, 0.026909792760785048, 0.03449162880054893)
-train mre, mae, rmse :  (-0.013424594270680072, 0.02744302404183101, 0.03515400456891561)
-train mre, mae, rmse :  (-0.01507840636875168, 0.026399693560995384, 0.0340099252141404)
-test  0   mre, mae, rmse :  (0.5089787653203184, 1.363375362604115, 1.8570183656086996)
-test  1   mre, mae, rmse :  (-0.9159883432603605, 1.2817998982332992, 1.7140510132508648)
-test  2   mre, mae, rmse :  (0.44473312781264535, 0.9941239026877812, 1.343086838355212)
+hidden_size = 400
+layer_num = 1
+max_epoch = int(5000)
+dropout_keep_rate = 0.4
+
+epoch 2000 train : -0.1896820629646861 0.24742201639734962 0.3205092090477434
+epoch 2000 test : -0.14625588507171422 0.2518719139958382 0.3060380268276646
+epoch 4000 train : 0.03688813648871153 0.1094575151454141 0.15512232034626017
+epoch 4000 test : 0.0908460139317444 0.09662248690626273 0.1381848694332477
+train mre, mae, rmse :  (0.07142512500570143, 0.12203381458782021, 0.17121974771975898)
+train mre, mae, rmse :  (0.01953480945842719, 0.14730832075297848, 0.19828209163165816)
+train mre, mae, rmse :  (0.049726982139890366, 0.16400752357353776, 0.20984529672593882)
+train mre, mae, rmse :  (0.06145453688822037, 0.05674642845270857, 0.07435152984561795)
+train mre, mae, rmse :  (0.013299567118958733, 0.12612207885700422, 0.15919023189209108)
+train mre, mae, rmse :  (-0.014094366956281423, 0.07629542745016331, 0.0936967364373393)
+train mre, mae, rmse :  (0.009732399596402945, 0.09995537092610923, 0.13400001754406485)
+train mre, mae, rmse :  (-0.024039329726886625, 0.05862567817171012, 0.07434075299449577)
+train mre, mae, rmse :  (0.06144996926010848, 0.17252866531770203, 0.23594885341873145)
+mre, mae, rmse : (0.0261740151314393, 0.2898676645343772, 0.12893058585488695)
 """
