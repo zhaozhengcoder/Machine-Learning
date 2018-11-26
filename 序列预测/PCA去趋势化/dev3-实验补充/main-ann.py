@@ -89,10 +89,10 @@ if __name__ == "__main__":
     #将偏差数据 分割 成输入和输出
     trainX, trainY = split_dataset(dataset)   #trainX 的shape 20 * 12 * 2 *480 ； trainY 的shape 20 * 12 * 1 *480
 
-    #train_x_raw = trainX[0]                                       # 取了第一条路段来进行预测 train_x_raw的sahpe ：12 * 2 *480
-    #train_y_raw = np.reshape(trainY[0], (days - time_step, 480))  # train_y_raw的shape 12 * 480
-    train_x_raw = np.reshape(trainX, (road_num * (days - time_step),time_step*dnum))   #train_x_raw (20 * 12, 2*480)
-    train_y_raw = np.reshape(trainY, (road_num * (days - time_step),dnum))             #train_y_raw (20 * 12,  480)
+    train_x_raw = trainX[0]                                       # 取了第一条路段来进行预测 train_x_raw的sahpe ：12 * 2 *480
+    train_y_raw = np.reshape(trainY[0], (days - time_step, 480))  # train_y_raw的shape 12 * 480
+    train_x_raw = np.reshape(train_x_raw, (days - time_step,time_step*dnum))   #train_x_raw (12, 2*480)
+    train_y_raw = np.reshape(train_y_raw, (days - time_step,dnum))             #train_y_raw (12,  480)
 
     # 归一化
     x_max = train_x_raw.max()
@@ -109,19 +109,19 @@ if __name__ == "__main__":
     train_len = int(total_len * (1-test_split_rate))
     test_len = int(total_len * test_split_rate)
 
-    test_x = train_x[train_len:]                # (60,2*480)
-    test_y = train_y[train_len:]                # (60, 480)
+    test_x = train_x[train_len:]                # (3,2*480)
+    test_y = train_y[train_len:]                # (3, 480)
     #train_x =train_x[0:train_len]
     #train_y =train_y[0:train_len]
-    train_x =train_x                            # (20*12,2*480)
-    train_y =train_y                            # (20*12, 480)
+    train_x =train_x                            # (12,2*480)
+    train_y =train_y                            # (12, 480)
 
     #ANN
     xs=tf.placeholder(tf.float32,[None,960])
     ys=tf.placeholder(tf.float32,[None,480])
 
-    l1=add_layer(xs,960,1500,activation_function=tf.nn.relu)
-    l2=add_layer(l1,1500,1000,activation_function=tf.nn.relu)
+    l1=add_layer(xs,960,1500,activation_function=tf.nn.sigmoid)
+    l2=add_layer(l1,1500,1000,activation_function=tf.nn.sigmoid)
     prediction=add_layer(l2,1000,480,activation_function=None)
 
     #loss = tf.reduce_mean(tf.reduce_sum(tf.square(ys - prediction),reduction_indices=[1]))
@@ -129,7 +129,7 @@ if __name__ == "__main__":
 
     mse = tf.losses.mean_squared_error(ys, prediction)
     print (mse)
-    train_op = tf.train.AdamOptimizer(0.01).minimize(mse)
+    train_op = tf.train.AdamOptimizer(0.001).minimize(mse)
 
     if int((tf.__version__).split('.')[1]) < 12:
         init = tf.initialize_all_variables()
@@ -146,15 +146,12 @@ if __name__ == "__main__":
         plt.plot(range(dnum), train_y_real[0], 'b-',label='true')        # 实际用蓝色
         plt.plot(range(dnum), train_y_pred_real[0], 'r-',label='prediction')   # 预测用红色
         plt.legend(loc='upper right')
-        #plt.show()
-        plt.savefig("train"+str(i)+".png")
-        plt.close()
-        """
         if (flag_istrain==1):
             plt.savefig("train"+str(i)+".png")
         else:
             plt.savefig("test" +str(i)+".png")
-        """
+        plt.close()
+
         train_mre, train_mae, train_rmse = get_metrics(train_y_real, train_y_pred_real)
         if(flag_istrain==1):
             print("epoch {} train : {} {} {} ".format(i, train_mre, train_mae, train_rmse))
@@ -162,7 +159,7 @@ if __name__ == "__main__":
             print("epoch {} test : {} {} {} ".format(i, train_mre, train_mae, train_rmse))
 
 
-    for i in range(50000):
+    for i in range(25000):
         # trainings
         sess.run(train_op, feed_dict={xs: train_x, ys: train_y})
         #print ("mse " , sess.run(mse, feed_dict={xs: train_x, ys: train_y}))
@@ -174,3 +171,7 @@ if __name__ == "__main__":
             #print ("shape : ",train_pre.shape)
             #print ("mre, mae, rmse : " , get_metrics(train_y,train_y_pred))
             print_to_console(i,train_y, train_y_pred,1)
+        if i % 500 == 0:
+            print ("mse : ",sess.run(mse, feed_dict={xs: test_x, ys: test_y}))
+            test_y_pred = sess.run(prediction, feed_dict={xs: test_x, ys: test_y})
+            print_to_console(i,test_y, test_y_pred,0)

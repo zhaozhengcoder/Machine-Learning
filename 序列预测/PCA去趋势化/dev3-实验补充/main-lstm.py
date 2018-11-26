@@ -163,7 +163,7 @@ if __name__ == "__main__":
     hidden_size = 200
     layer_num = 1
     max_epoch = int(2000 * 6)  #6
-    dropout_keep_rate = 0.9
+    dropout_keep_rate = 0.9    #0.9 
 
     # 根据输入数据来决定，train_num训练集大小,input_size输入维度
     train_num, time_step_size, input_size = train_x.shape     # sahpe ：12 * 2 *480
@@ -238,6 +238,18 @@ if __name__ == "__main__":
         else:
             print("epoch {} test : {} {} {} ".format(i, train_mre, train_mae, train_rmse))
 
+    def cal_total_inlstm(y_raw_test,y_pre_test_real):  #true ,pred
+        test_len = y_raw_test.shape[0]
+        test_mre=0.0
+        test_mae=0.0
+        test_rmse=0.0
+        for i in range(0,test_len):
+            res = get_metrics(y_raw_test[i],y_pre_test_real[i])
+            test_mre+=res[0]
+            test_mae+=res[1]
+            test_rmse+=res[2]
+        return test_mre/test_len,test_mae/(test_len+1),test_rmse/test_len
+
     for i in range(1, max_epoch + 1):
         feed_dict = {x_input: train_x, y_real: train_y, keep_prob: dropout_keep_rate, batch_size: train_num}
         sess.run(train_op, feed_dict=feed_dict)
@@ -282,12 +294,15 @@ if __name__ == "__main__":
     show1_ticks(test_y[0][0],test_y_pred[0][0])
     show1_ticks(test_y[0][1],test_y_pred[0][1])
     show1_ticks(test_y[0][2],test_y_pred[0][2])
+    print("mre, mae, rmse : ",cal_total_inlstm(test_y,test_y_pred))
+
+
 
 """
 hidden_size = 200
 layer_num = 1
 max_epoch = int(2000 * 10)
-dropout_keep_rate = 0.9
+dropout_keep_rate = 0.9   #dropout_keep_rate 降低，效果就差一点
 
 epoch 200 train : 0.39798301925076296 1.8144739025190875 2.737262137635115
 epoch 200 test : 0.3925649338403189 1.980381288756773 3.0827433023933053

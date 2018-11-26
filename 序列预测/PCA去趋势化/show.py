@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 import pandas as pd 
 from datetime import datetime 
 import os 
@@ -6,6 +7,7 @@ import matplotlib.pyplot as plt
 import pickle
 import pca
 import pickle
+from pylab import *
 
 def myload(filename):
     abs_path='C:/Users/wwwa8/Documents/GitHub/Machine-Learning/序列预测/PCA去趋势化/'
@@ -21,10 +23,12 @@ def show1(arr):
 
 #给横坐标由原来的0~480，变成现在的0~24，改变横坐标的比例
 def show1_ticks(arr):
+    plt.figure(dpi=80)
     #改变x轴的刻度
     x_kedu=[0,4,8,12,16,20,24]
     orig_ticks = [i*20 for i in x_kedu]
-    new_ticks = x_kedu
+    #new_ticks = x_kedu
+    new_ticks = ["0:00","4:00","8:00","12:00","16:00","20:00","24:00"]
     plt.xticks(orig_ticks,new_ticks)
     #改变y轴的刻度
     y_kedu=[0,5,10,15,20]
@@ -32,20 +36,26 @@ def show1_ticks(arr):
     y_new_ticks =y_kedu
     plt.yticks(y_orig_ticks,y_new_ticks)
     
-    plt.xlabel("Time (hour)")
+    plt.xlabel("Time")
     plt.ylabel("Traffic volume")
-
+    #zhfont1 = matplotlib.font_manager.FontProperties(fname='C:\Windows\Fonts\simsun.ttc')
+    #plt.xlabel("时间 (小时)",fontproperties=zhfont1)
+    #plt.ylabel("车流量",fontproperties=zhfont1)   # 加上 from pylab import *    
+    
     for index in range(arr.shape[0]):
         plt.plot(arr[index])
     plt.grid()
     plt.show()
+    plt.close()
 
 
 def show1_ticks_average(arr):
     #改变x轴的刻度
+    plt.figure(dpi=80)
     x_kedu=[0,4,8,12,16,20,24]
     orig_ticks = [i*20 for i in x_kedu]
-    new_ticks = x_kedu
+    #new_ticks = x_kedu
+    new_ticks = ["0:00","4:00","8:00","12:00","16:00","20:00","24:00"]
     plt.xticks(orig_ticks,new_ticks)
     #改变y轴的刻度
     y_kedu=[0,5,10,15,20]
@@ -53,25 +63,30 @@ def show1_ticks_average(arr):
     y_new_ticks =y_kedu
     plt.yticks(y_orig_ticks,y_new_ticks)
     
-    plt.xlabel("Time (hour)")
+    plt.xlabel("Time")
     plt.ylabel("Traffic volume")
+    #zhfont1 = matplotlib.font_manager.FontProperties(fname='C:\Windows\Fonts\simsun.ttc')
+    #plt.xlabel("时间 (小时)",fontproperties=zhfont1)
+    #plt.ylabel("车流量",fontproperties=zhfont1)   # 加上 from pylab import *  
 
     #画一个平均的
     avg = np.mean(arr,axis=0)
-    plt.plot(avg,label="main trend data")
-    plt.legend(loc='upper right')
+    plt.plot(avg)
+    #plt.plot(avg,label="main trend data")
+    #plt.legend(loc='upper right')
 
     plt.grid()
     plt.show()
 
 
 def show1_ticks_residual(arr):
-    plt.xlabel("Time (hour)")
+    plt.xlabel("Time")
     plt.ylabel("Traffic volume")
     #改变x轴的刻度
     x_kedu=[0,4,8,12,16,20,24]
     orig_ticks = [i*20 for i in x_kedu]
-    new_ticks = x_kedu
+    #new_ticks = x_kedu
+    new_ticks = ["0:00","4:00","8:00","12:00","16:00","20:00","24:00"]
     plt.xticks(orig_ticks,new_ticks)
     #residual 的 y轴的刻度
     y_kedu=[-4,-2,0,2,4]
@@ -156,13 +171,24 @@ def show_hist(arr):
     plt.show()
     """
     arr=arr.reshape(-1)  #arr原来的shape是多维的，然后变成一维
+    plt.figure(dpi=80)
+
+    #zhfont1 = matplotlib.font_manager.FontProperties(fname='C:\Windows\Fonts\simsun.ttc')
+    #plt.xlabel("数据分布",fontproperties=zhfont1)
+    #plt.ylabel("样本数",fontproperties=zhfont1)   # 加上 from pylab import *
+    
+    plt.xlabel("Data distribution")
+    plt.ylabel("Sample number")
     plt.hist(arr,bins=100)  #绘制数据分布的直方图
+    plt.grid()
     plt.show()
+    plt.close()
 
 if __name__=="__main__":
     arr = myload("dump_arr_9-13.txt")
     main_x = myload("dump_main_x_9-13.txt")
     rest_x = myload("dump_rest_x_9-13.txt")
+    
     #show1(arr)
     #show1(main_x)
     #show1(rest_x)
@@ -178,8 +204,8 @@ if __name__=="__main__":
 
     #
     #show1_ticks(main_x)
-    #show1_ticks_average(main_x)
+    show1_ticks_average(main_x)
     #show1_ticks_residual(rest_x)
 
     #绘制偏差分布的直方图
-    show_hist(rest_x)
+    #show_hist(rest_x)

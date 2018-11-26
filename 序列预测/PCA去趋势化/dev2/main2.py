@@ -212,16 +212,17 @@ if __name__ == "__main__":
         rmse = np.sqrt(np.mean(np.square(y - pred_y)))
         return mre, mae, rmse
 
-    def cal_total(y_pre_test_real,y_raw_test):
+    def cal_total(y_raw_test,y_pre_test_real):  #true ,pred
+        test_len=y_raw_test.shape[0]
         test_mre=0.0
         test_mae=0.0
         test_rmse=0.0
         for i in range(0,test_len):
-            res = get_metrics(y_pre_test_real[i],y_raw_test[i])
+            res = get_metrics(y_raw_test[i],y_pre_test_real[i])
             test_mre+=res[0]
             test_mae+=res[1]
             test_rmse+=res[2]
-        return test_mre/test_len,test_mae,test_rmse/test_len
+        return test_mre/test_len,test_mae/test_len,test_rmse/test_len
 
     def print_to_console(i, train_y ,train_y_pred,flag_istrain,isshow):
         train_y_pred_real = train_y_pred * (y_max - y_min) + y_min  # 反归一化
@@ -263,9 +264,8 @@ if __name__ == "__main__":
 
     #偏差数据+主成分数据 
     y_main = dataset_main[0][time_step:days, :]    # y_main的主成分[2~14] shape 12 * 2 * 480
-    y_pre_train_real = y_main + train_y_pred * (y_max - y_min) + y_min   #train_y_pred的shape是 ：(9,480)
-
-    y_raw_train = y_main + train_y * (y_max - y_min) + y_min   # true
+    y_pre_train_real = y_main + train_y_pred * (y_max - y_min) + y_min   #pre  (9,480)
+    y_raw_train = y_main + train_y * (y_max - y_min) + y_min             #true
     
     #plt.plot(y_raw_train[0])  #只画第一天
     #plt.plot(y_pre_train_real[0])
@@ -275,10 +275,12 @@ if __name__ == "__main__":
     show1_ticks(y_raw_train[2],y_pre_train_real[2])
 
     for i in range(0,train_len):
-        print("train mre, mae, rmse : ", get_metrics(y_pre_train_real[i], y_raw_train[i]))
+        print("train mre, mae, rmse : ", get_metrics(y_raw_train[i],y_pre_train_real[i]))
+        print("train mre, mae, rmse --: ", get_metrics(y_pre_train_real[i],y_raw_train[i]))  
 
-    y_pre_test_real = y_main[train_len:] + test_y_pred * (y_max - y_min) + y_min
-    y_raw_test = y_main[train_len:] + test_y * (y_max - y_min) + y_min   # true
+    # test
+    y_pre_test_real = y_main[train_len:] + test_y_pred * (y_max - y_min) + y_min   #pre
+    y_raw_test = y_main[train_len:] + test_y * (y_max - y_min) + y_min             #true
 
     #plt.plot(y_pre_test_real[0],color='blue',label='prediction')         # 只画第一天
     #plt.plot(y_raw_test[0], color='red', label='true')
@@ -286,8 +288,15 @@ if __name__ == "__main__":
     show1_ticks(y_raw_test[0],y_pre_test_real[0])
     show1_ticks(y_raw_test[1],y_pre_test_real[1])
     show1_ticks(y_raw_test[2],y_pre_test_real[2])
+    y_raw_test[0][y_raw_test[0]==0.0]=0.1
+    print ("my mre : ", np.mean((np.abs(y_raw_test[0]-y_pre_test_real[0])) / y_raw_test[0] ))
 
-    print ("mre, mae, rmse :",cal_total(y_pre_test_real,y_raw_test))
+
+    print("test mre, mae, rmse : ", get_metrics(y_raw_test[0],y_pre_test_real[0]))
+    print("test mre, mae, rmse : ", get_metrics(y_raw_test[1],y_pre_test_real[1]))
+    print("test mre, mae, rmse : ", get_metrics(y_raw_test[2],y_pre_test_real[2]))
+
+    print ("total : mre, mae, rmse :",cal_total(y_raw_test,y_pre_test_real))   # true ,pre
     plt.show()
 
 
