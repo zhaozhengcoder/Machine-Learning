@@ -22,7 +22,7 @@
     LSTM 预测时间序列
 
 
-#### 5. tensorflow_tutorials  （强烈推荐这个 ！！！）
+#### 5. tensorflow_tutorials  
 
     我自己总结的一个tensorflow入门教程，包括一些tf的基本语法和tf搭建一些常用网络模型的demo。使用tensorflow 搭建常见的网络模型。
     包括：
